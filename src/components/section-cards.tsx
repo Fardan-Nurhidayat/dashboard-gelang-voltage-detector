@@ -10,14 +10,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export function SectionCards({ bpm }) {
-  console.log(bpm);
-  let data: number;
+export function SectionCards({ bpm }: { bpm: Array<number> }) {
+  let data;
+
   if (bpm.length === 0) {
     data = 0;
   } else {
-    data = bpm.feeds[99].field3;
+    data = bpm;
   }
+  console.log(data);
   return (
     <div className='*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4'>
       <Card className='@container/card'>
