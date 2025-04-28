@@ -9,7 +9,14 @@ import { useEffect, useState } from "react";
 // import data from "../src/app/dashboard/data.json";
 
 export default function Page() {
-  const [bpm, setBpm] = useState([]);
+  const [bpm, setBpm] = useState<ThingSpeakData>({
+    length: 0,
+    channel: {
+      id: 0,
+      name: "",
+    },
+    feeds: [],
+  });
   const fetchApi = async () => {
     const url = "https://api.thingspeak.com/channels/2922736/fields/3.json";
     try {
@@ -50,4 +57,29 @@ export default function Page() {
       </SidebarInset>
     </SidebarProvider>
   );
+}
+interface ThingSpeakFeed {
+  created_at: string;
+  entry_id: number;
+  field1?: string | null;
+  field2?: string | null;
+  field3?: string | null;
+  // tambahkan fields lain sesuai kebutuhan
+}
+
+interface ThingSpeakChannel {
+  id: number;
+  name: string;
+  description?: string;
+  latitude?: string;
+  longitude?: string;
+  field1?: string;
+  field2?: string;
+  field3?: string;
+  // tambahkan fields lain sesuai kebutuhan
+}
+interface ThingSpeakData {
+  length: number;
+  channel: ThingSpeakChannel;
+  feeds: ThingSpeakFeed[];
 }

@@ -10,20 +10,45 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export function SectionCards({ bpm }: { bpm: Array<number> }) {
+interface ThingSpeakFeed {
+  created_at: string;
+  entry_id: number;
+  field1?: string | null;
+  field2?: string | null;
+  field3?: string | null;
+  // tambahkan fields lain sesuai kebutuhan
+}
+
+interface ThingSpeakChannel {
+  id: number;
+  name: string;
+  description?: string;
+  latitude?: string;
+  longitude?: string;
+  field1?: string;
+  field2?: string;
+  field3?: string;
+  // tambahkan fields lain sesuai kebutuhan
+}
+interface ThingSpeakData {
+  length: number;
+  channel: ThingSpeakChannel;
+  feeds: ThingSpeakFeed[];
+}
+export function SectionCards({ bpm }: { bpm: ThingSpeakData }) {
   let data;
 
   if (bpm.length === 0) {
     data = 0;
   } else {
-    data = bpm;
+    data = bpm.feeds[99].field3;
   }
-  console.log(data);
+  // console.log(data);
   return (
     <div className='*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4'>
       <Card className='@container/card'>
         <CardHeader>
-          <CardDescription>Total Revenue</CardDescription>
+          <CardDescription>BPM</CardDescription>
           <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
             {data}
           </CardTitle>
