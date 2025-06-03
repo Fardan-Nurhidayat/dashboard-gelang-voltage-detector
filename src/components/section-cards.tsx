@@ -36,98 +36,93 @@ interface ThingSpeakData {
   feeds: ThingSpeakFeed[];
 }
 export function SectionCards({ bpm }: { bpm: ThingSpeakData }) {
-  let data;
+  const bpmValues = bpm.feeds
+    .map(feed => Number(feed.field3))
+    .filter(val => !isNaN(val)); // hilangkan null/undefined/NaN
 
-  if (bpm.length === 0) {
-    data = 0;
-  } else {
-    data = bpm.feeds[99].field3;
-  }
-  console.log(bpm);
+  const latestBpm = bpmValues[bpmValues.length - 1] ?? 0;
+  const averageBpm =
+    bpmValues.length > 0
+      ? (bpmValues.reduce((a, b) => a + b, 0) / bpmValues.length).toFixed(2)
+      : 0;
+  const maxBpm = Math.max(...bpmValues);
+  const minBpm = Math.min(...bpmValues);
   return (
     <div className='*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4'>
       <Card className='@container/card'>
         <CardHeader>
-          <CardDescription>BPM</CardDescription>
+          <CardDescription>BPM Realtime</CardDescription>
           <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            {data}
+            {latestBpm}
           </CardTitle>
           <CardAction>
-            <Badge variant='outline'>
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
+            <Badge variant='outline'>⏱️ Live Update</Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className='flex-col items-start gap-1.5 text-sm'>
           <div className='line-clamp-1 flex gap-2 font-medium'>
-            Trending up this month <IconTrendingUp className='size-4' />
+            Stabil dalam periode pemantauan
           </div>
           <div className='text-muted-foreground'>
-            Visitors for the last 6 months
+            Data terakhir diupdate realtime setiap 5 detik
           </div>
         </CardFooter>
       </Card>
       <Card className='@container/card'>
         <CardHeader>
-          <CardDescription>New Customers</CardDescription>
+          <CardDescription>BPM Rata-rata</CardDescription>
           <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            1,234
+            {averageBpm}
           </CardTitle>
           <CardAction>
-            <Badge variant='outline'>
-              <IconTrendingDown />
-              -20%
-            </Badge>
+            <Badge variant='outline'>📊 Rata-rata</Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className='flex-col items-start gap-1.5 text-sm'>
-          <div className='line-clamp-1 flex gap-2 font-medium'>
-            Down 20% this period <IconTrendingDown className='size-4' />
+          <div className='flex gap-2 font-medium'>
+            Stabil dalam periode pemantauan
           </div>
           <div className='text-muted-foreground'>
-            Acquisition needs attention
+            Menggambarkan kondisi umum detak jantung
           </div>
         </CardFooter>
       </Card>
       <Card className='@container/card'>
         <CardHeader>
-          <CardDescription>Active Accounts</CardDescription>
+          <CardDescription>BPM Tertinggi</CardDescription>
           <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            45,678
+            {maxBpm}
           </CardTitle>
           <CardAction>
-            <Badge variant='outline'>
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
+            <Badge variant='outline'>⚠️ Waspada</Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className='flex-col items-start gap-1.5 text-sm'>
           <div className='line-clamp-1 flex gap-2 font-medium'>
-            Strong user retention <IconTrendingUp className='size-4' />
+            Stabil dalam periode pemantauan
           </div>
-          <div className='text-muted-foreground'>Engagement exceed targets</div>
+          <div className='text-muted-foreground'>
+            BPM tertinggi tercatat dalam periode ini
+          </div>
         </CardFooter>
       </Card>
       <Card className='@container/card'>
         <CardHeader>
-          <CardDescription>Growth Rate</CardDescription>
+          <CardDescription>BPM Terendah</CardDescription>
           <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-            4.5%
+            {minBpm}
           </CardTitle>
           <CardAction>
-            <Badge variant='outline'>
-              <IconTrendingUp />
-              +4.5%
-            </Badge>
+            <Badge variant='outline'>🧘 Low BPM </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className='flex-col items-start gap-1.5 text-sm'>
           <div className='line-clamp-1 flex gap-2 font-medium'>
-            Steady performance increase <IconTrendingUp className='size-4' />
+            Stabil dalam periode pemantauan
           </div>
-          <div className='text-muted-foreground'>Meets growth projections</div>
+          <div className='text-muted-foreground'>
+            BPM terendah dapat mengindikasikan istirahat
+          </div>
         </CardFooter>
       </Card>
     </div>
