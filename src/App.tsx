@@ -8,6 +8,9 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 // import data from "../src/app/dashboard/data.json";
 
+import { saveChannelAndFeeds, getChannel, getFeeds } from "@/utils/IndexDB";
+import { ChartAreaInteractive } from "./components/chart-area-interactive";
+
 export default function Page() {
   const [bpm, setBpm] = useState<ThingSpeakData>({
     length: 0,
@@ -17,30 +20,54 @@ export default function Page() {
     },
     feeds: [],
   });
+  const [chartData, setChartData] = useState<{ date: string; bpm: number }[]>(
+    []
+  );
+
   const fetchApi = async () => {
     const url = "https://api.thingspeak.com/channels/2922736/fields/3.json";
     try {
       const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      // console.log(response);
-      const data = await response.json();
-      return setBpm(data);
+      const responseJson = await response.json();
+
+      await saveChannelAndFeeds(responseJson); // simpan ke IndexedDB
+
+      const savedChannel = await getChannel();
+      const savedFeeds = await getFeeds();
+
+      // isi state bpm langsung
+      setBpm({
+        length: savedFeeds.length,
+        channel: savedChannel,
+        feeds: savedFeeds,
+      });
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
-  useEffect(() => {
-    // fetchApi();
+  const transformFeedsToChartData = (
+    feeds: ThingSpeakFeed[]
+  ): { date: string; bpm: number }[] => {
+    return feeds
+      .filter(feed => feed.field3) // pastikan ada data BPM
+      .map(feed => ({
+        date: new Date(feed.created_at).toISOString().split("T")[0],
+        bpm: Number(feed.field3),
+      }));
+  };
 
+  useEffect(() => {
     const interval = setInterval(() => {
       fetchApi();
     }, 5000);
 
     return () => clearInterval(interval);
   }, []);
+  useEffect(() => {
+    const transformed = transformFeedsToChartData(bpm.feeds);
+    setChartData(transformed);
+  }, [bpm.feeds]);
 
   return (
     <SidebarProvider>
@@ -50,7 +77,14 @@ export default function Page() {
         <div className='flex flex-1 flex-col'>
           <div className='@container/main flex flex-1 flex-col gap-2'>
             <div className='flex flex-col gap-4 py-4 md:gap-6 md:py-6'>
-              <SectionCards bpm={bpm} />
+              {bpm.feeds.length === 0 ? (
+                <p className='text-center'>Loading data...</p>
+              ) : (
+                <SectionCards bpm={bpm} />
+              )}
+            </div>
+            <div className='p-5'>
+              <ChartAreaInteractive chartData={chartData} />
             </div>
           </div>
         </div>
