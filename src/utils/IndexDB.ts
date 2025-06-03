@@ -3,6 +3,25 @@ const DB_NAME = "VoltageDB";
 const CHANNEL_STORE = "channel";
 const FEEDS_STORE = "feeds";
 
+interface ThingSpeakFeed {
+  created_at: string;
+  entry_id: number;
+  field1?: string | null;
+  field2?: string | null;
+  field3?: string | null;
+}
+
+interface ThingSpeakChannel {
+  id: number;
+  name: string;
+  description?: string;
+  latitude?: string;
+  longitude?: string;
+  field1?: string;
+  field2?: string;
+  field3?: string;
+}
+
 export const initDB = async () => {
   return openDB(DB_NAME, 1, {
     upgrade(db) {
@@ -16,7 +35,13 @@ export const initDB = async () => {
   });
 };
 
-export const saveChannelAndFeeds = async ({ channel, feeds }: any) => {
+export const saveChannelAndFeeds = async ({
+  channel,
+  feeds,
+}: {
+  channel: ThingSpeakChannel;
+  feeds: ThingSpeakFeed[];
+}) => {
   const db = await initDB();
   const tx = db.transaction([CHANNEL_STORE, FEEDS_STORE], "readwrite");
 
