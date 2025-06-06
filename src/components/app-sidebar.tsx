@@ -7,7 +7,6 @@ import {
   IconInnerShadowTop,
 } from "@tabler/icons-react";
 
-import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
@@ -20,13 +19,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-
+const getUserFromLocalStorage = () => {
+  const userString = localStorage.getItem("user");
+  return userString ? JSON.parse(userString) : null;
+};
+// console.log(getUserFromLocalStorage().name);
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -107,14 +105,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
         <NavSecondary
           items={data.navSecondary}
           className='mt-auto'
         />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={getUserFromLocalStorage()} />
       </SidebarFooter>
     </Sidebar>
   );
