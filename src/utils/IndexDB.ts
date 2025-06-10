@@ -39,6 +39,7 @@ interface User {
   id: number;
   name: string;
   password: string;
+  is_admin: number;
 }
 
 const userData: User[] = [
@@ -46,56 +47,72 @@ const userData: User[] = [
     id: 0,
     name: "Vinn",
     password: "12345",
+    is_admin: 0,
   },
   {
     id: 1,
     name: "Arfa",
     password: "12345",
+    is_admin: 0,
   },
   {
     id: 2,
     name: "Fardan",
     password: "12345",
+    is_admin: 0,
   },
   {
     id: 3,
     name: "Farhan",
     password: "12345",
+    is_admin: 0,
   },
   {
     id: 4,
     name: "Lutfhi",
     password: "12345",
+    is_admin: 0,
   },
   {
     id: 5,
     name: "Rakha",
     password: "12345",
+    is_admin: 0,
   },
   {
     id: 6,
     name: "izza",
     password: "12345",
+    is_admin: 0,
   },
   {
     id: 7,
     name: "Reza",
     password: "12345",
+    is_admin: 0,
   },
   {
     id: 8,
     name: "Josef",
     password: "12345",
+    is_admin: 0,
   },
   {
     id: 9,
     name: "Angga",
     password: "12345",
+    is_admin: 0,
+  },
+  {
+    id: 10,
+    name: "Admin",
+    password: "admin123",
+    is_admin: 1,
   },
 ];
 
 export const initDB = async () => {
-  const db = await openDB(DB_NAME, 2, {
+  const db = await openDB(DB_NAME, 3, {
     upgrade(db) {
       if (!db.objectStoreNames.contains(CHANNEL_STORE)) {
         db.createObjectStore(CHANNEL_STORE, { keyPath: "id" });
@@ -135,9 +152,16 @@ export const getUser = async (name: string, password: string) => {
   // Mencari user berdasarkan nama dan password
   const user = await store.getAll();
   const foundUser = user.find(u => u.name === name && u.password === password);
-
+  let showUser = null;
+  if (foundUser) {
+    showUser = {
+      id: foundUser.id,
+      name: foundUser.name,
+      is_admin: foundUser.is_admin,
+    };
+  }
   await tx.done;
-  return foundUser || null;
+  return showUser;
 };
 
 export const saveChannelAndFeeds = async ({

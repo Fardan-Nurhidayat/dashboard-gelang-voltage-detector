@@ -42,27 +42,88 @@ export function ChartAreaInteractive({
   chartData: { date: string; bpm: number }[];
 }) {
   const isMobile = useIsMobile();
-  const [timeRange, setTimeRange] = React.useState("90d");
+  const [timeRange, setTimeRange] = React.useState("30d");
 
   React.useEffect(() => {
     if (isMobile) {
-      setTimeRange("7d");
+      setTimeRange("24h");
     }
   }, [isMobile]);
 
-  const filteredData = chartData.filter(item => {
-    const date = new Date(item.date);
-    const referenceDate = new Date("2024-06-30");
-    let daysToSubtract = 90;
-    if (timeRange === "30d") {
-      daysToSubtract = 30;
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7;
+  // Function to group data by day and get the latest entry for each day
+  const groupDataByDay = (data: { date: string; bpm: number }[]) => {
+    const grouped = data.reduce((acc, item) => {
+      // Extract date part only (YYYY-MM-DD) from ISO string
+      const dateKey = new Date(item.date).toISOString().split("T")[0];
+
+      if (
+        !acc[dateKey] ||
+        new Date(item.date) > new Date(acc[dateKey].originalDate)
+      ) {
+        acc[dateKey] = {
+          date: dateKey, // Use date only for chart display
+          bpm: item.bpm,
+          originalDate: item.date, // Keep original timestamp for comparison
+        };
+      }
+
+      return acc;
+    }, {} as Record<string, { date: string; bpm: number; originalDate: string }>);
+
+    // Return only date and bpm, sorted by date
+    return Object.values(grouped)
+      .map(({ date, bpm }) => ({ date, bpm }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  };
+
+  const filteredData = React.useMemo(() => {
+    const now = new Date();
+    let startDate: Date;
+
+    // Calculate start date based on time range
+    switch (timeRange) {
+      case "24h":
+        startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
+        break;
+      case "7d":
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
+        break;
+      case "30d":
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+        break;
+      default:
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
-    const startDate = new Date(referenceDate);
-    startDate.setDate(startDate.getDate() - daysToSubtract);
-    return date >= startDate;
-  });
+
+    // Filter data based on time range
+    const filtered = chartData.filter(item => {
+      const itemDate = new Date(item.date);
+      return itemDate >= startDate && itemDate <= now;
+    });
+
+    // For 24h view, don't group by day - show all data points
+    if (timeRange === "24h") {
+      return filtered.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+    }
+
+    // For 7d and 30d views, group by day and get latest entry for each day
+    return groupDataByDay(filtered);
+  }, [chartData, timeRange]);
+
+  const getTimeRangeDescription = () => {
+    switch (timeRange) {
+      case "24h":
+        return "Last 24 hours";
+      case "7d":
+        return "Last 7 days";
+      case "30d":
+        return "Last 30 days";
+      default:
+        return "Last 30 days";
+    }
+  };
 
   return (
     <Card className='@container/card'>
@@ -70,9 +131,12 @@ export function ChartAreaInteractive({
         <CardTitle>Total BPM</CardTitle>
         <CardDescription>
           <span className='hidden @[540px]/card:block'>
-            Total for the last 3 months
+            {getTimeRangeDescription()}{" "}
+            {timeRange !== "24h" ? "(Latest reading per day)" : ""}
           </span>
-          <span className='@[540px]/card:hidden'>Last 3 months</span>
+          <span className='@[540px]/card:hidden'>
+            {getTimeRangeDescription()}
+          </span>
         </CardDescription>
         <CardAction>
           <ToggleGroup
@@ -81,9 +145,9 @@ export function ChartAreaInteractive({
             onValueChange={setTimeRange}
             variant='outline'
             className='hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex'>
-            <ToggleGroupItem value='90d'>Last 3 months</ToggleGroupItem>
             <ToggleGroupItem value='30d'>Last 30 days</ToggleGroupItem>
             <ToggleGroupItem value='7d'>Last 7 days</ToggleGroupItem>
+            <ToggleGroupItem value='24h'>Last 24 hours</ToggleGroupItem>
           </ToggleGroup>
           <Select
             value={timeRange}
@@ -92,14 +156,9 @@ export function ChartAreaInteractive({
               className='flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden'
               size='sm'
               aria-label='Select a value'>
-              <SelectValue placeholder='Last 3 months' />
+              <SelectValue placeholder='Last 30 days' />
             </SelectTrigger>
             <SelectContent className='rounded-xl'>
-              <SelectItem
-                value='90d'
-                className='rounded-lg'>
-                Last 3 months
-              </SelectItem>
               <SelectItem
                 value='30d'
                 className='rounded-lg'>
@@ -109,6 +168,11 @@ export function ChartAreaInteractive({
                 value='7d'
                 className='rounded-lg'>
                 Last 7 days
+              </SelectItem>
+              <SelectItem
+                value='24h'
+                className='rounded-lg'>
+                Last 24 hours
               </SelectItem>
             </SelectContent>
           </Select>
@@ -147,6 +211,14 @@ export function ChartAreaInteractive({
               minTickGap={32}
               tickFormatter={value => {
                 const date = new Date(value);
+                if (timeRange === "24h") {
+                  return date.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                }
                 return date.toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
@@ -157,12 +229,21 @@ export function ChartAreaInteractive({
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={value =>
-                    new Date(value).toLocaleDateString("en-US", {
+                  labelFormatter={value => {
+                    const date = new Date(value);
+                    if (timeRange === "24h") {
+                      return date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      });
+                    }
+                    return date.toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
-                    })
-                  }
+                    });
+                  }}
                   indicator='dot'
                 />
               }

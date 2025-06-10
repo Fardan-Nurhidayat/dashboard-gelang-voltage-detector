@@ -12,6 +12,8 @@ import {
 } from "@/utils/IndexDB";
 import { ChartAreaInteractive } from "./components/chart-area-interactive";
 
+import Tables from "./components/tables";
+
 interface ThingSpeakFeed {
   created_at: string;
   entry_id: number;
@@ -47,8 +49,8 @@ interface ThingSpeakData {
   length: number;
   channel: ThingSpeakChannel;
   feeds: ThingSpeakFeed[];
-  filteredFeeds: ThingSpeakFeed[];
 }
+
 export default function DashboardPage() {
   const [channel, setChannel] = useState<ThingSpeakData>({
     length: 0,
@@ -69,7 +71,6 @@ export default function DashboardPage() {
       field9: "",
     },
     feeds: [],
-    filteredFeeds: [],
   });
 
   const [chartData, setChartData] = useState<{ date: string; bpm: number }[]>(
@@ -80,26 +81,32 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = currentUser?.id?.toString() || null;
-  // const filteredFeeds = channel.feeds.filter(
-  //   feed => feed.field3 && feed.field5 === userId
-  // );
+
   const fetchApi = async () => {
     const feedsUrl = "https://api.thingspeak.com/channels/2922736/feeds.json";
+
     try {
       const response = await fetch(feedsUrl);
       const responseJson = await response.json();
 
+      // Simpan data baru dari API ke IndexedDB
       await saveChannelAndFeeds(responseJson);
+
       const savedChannel = await getChannel();
-      const savedFeeds = await getAllFeeds();
-      console.log(userId);
-      const getFeedsByUserId = await getFeeds(userId);
+      let filteredFeeds = [];
+
+      if (currentUser.is_admin === 1) {
+        // Admin: ambil semua feeds
+        filteredFeeds = await getAllFeeds();
+      } else {
+        // User biasa: ambil feeds berdasarkan userId
+        filteredFeeds = await getFeeds(userId);
+      }
 
       setChannel({
-        length: savedFeeds.length,
+        length: filteredFeeds.length,
         channel: savedChannel,
-        feeds: savedFeeds,
-        filteredFeeds: getFeedsByUserId,
+        feeds: filteredFeeds,
       });
 
       setIsLoading(false);
@@ -110,24 +117,25 @@ export default function DashboardPage() {
   };
 
   // Load data dari IndexedDB saat komponen mount
-  // const loadSavedData = async () => {
-  //   try {
-  //     const savedChannel = await getChannel();
-  //     const savedFeeds = await getFeeds(userId); // Filter berdasarkan userId
+  const loadSavedData = async () => {
+    try {
+      const savedChannel = await getChannel();
+      const savedFeeds = await getFeeds(userId); // Filter berdasarkan userId
 
-  //     if (savedChannel && savedFeeds.length > 0) {
-  //       setChannel({
-  //         length: savedFeeds.length,
-  //         channel: savedChannel,
-  //         feeds: savedFeeds,
-  //       });
-  //       setIsLoading(false);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error loading saved data:", error);
-  //   }
-  // };
+      if (savedChannel && savedFeeds.length > 0) {
+        setChannel({
+          length: savedFeeds.length,
+          channel: savedChannel,
+          feeds: savedFeeds,
+        });
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error loading saved data:", error);
+    }
+  };
 
+  // Enhanced function to transform feeds to chart data with better date handling
   const transformFeedsToChartData = (
     feeds: ThingSpeakFeed[],
     userId: string | null
@@ -136,14 +144,20 @@ export default function DashboardPage() {
 
     return feeds
       .filter(feed => feed.field3 && feed.field5 === userId) // Filter berdasarkan field5 dan field3
-      .map(feed => ({
-        date: new Date(feed.created_at).toISOString().split("T")[0],
-        bpm: Number(feed.field3),
-      }));
+      .map(feed => {
+        // Parse the created_at timestamp
+        const createdAt = new Date(feed.created_at);
+
+        return {
+          date: createdAt.toISOString(), // Keep full ISO timestamp for accurate filtering and grouping
+          bpm: Number(feed.field3),
+        };
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Sort by date ascending
   };
 
   useEffect(() => {
-    // loadSavedData();
+    loadSavedData();
     fetchApi();
 
     const interval = setInterval(() => {
@@ -159,6 +173,7 @@ export default function DashboardPage() {
       setChartData(transformed);
     }
   }, [channel.feeds, userId]);
+
   return (
     <SidebarProvider>
       <AppSidebar variant='inset' />
@@ -166,18 +181,20 @@ export default function DashboardPage() {
         <SiteHeader />
         <div className='flex flex-1 flex-col'>
           <div className='@container/main flex flex-1 flex-col gap-2'>
-            <div className='flex flex-col gap-4 py-4 md:gap-6 md:py-6'>
+            <div className='flex flex-col gap-4 py-4 px-10 md:gap-6 md:py-6'>
               {isLoading ? (
                 <p className='text-center'>Loading data...</p>
               ) : channel.feeds.length === 0 ? (
                 <p className='text-center'>No data available</p>
+              ) : currentUser.is_admin === 1 ? (
+                // 🔽 Admin melihat Tabel
+                <Tables feeds={channel.feeds} />
               ) : (
-                <SectionCards feeds={channel.filteredFeeds} />
-              )}
-            </div>
-            <div className='p-5'>
-              {chartData.length > 0 && (
-                <ChartAreaInteractive chartData={chartData} />
+                // 🔽 User biasa melihat Chart dan SectionCards
+                <>
+                  <SectionCards feeds={channel.feeds} />
+                  <ChartAreaInteractive chartData={chartData} />
+                </>
               )}
             </div>
           </div>
