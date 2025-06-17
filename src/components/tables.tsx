@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Link } from "react-router";
 interface ThingSpeakFeed {
   created_at: string;
   entry_id: number;
@@ -72,6 +73,7 @@ export default function Tables({ feeds }: TableProps) {
   const usersWithFeeds = users.map(user => {
     const latestFeed = groupedFeeds[user.id.toString()] || {};
     return {
+      id : user.id,
       name: user.name,
       location:
         latestFeed.field1 && latestFeed.field2
@@ -125,7 +127,9 @@ export default function Tables({ feeds }: TableProps) {
                 key={index}
                 className='hover:bg-muted/20 transition-colors duration-150'>
                 <TableCell className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
-                  {user.name}
+                  <Link to={`/histori-data/${user.id}`} className="underline hover:text-primary">
+                    {user.name}
+                  </Link>
                 </TableCell>
                 <TableCell className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
                   <a

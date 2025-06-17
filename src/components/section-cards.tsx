@@ -109,7 +109,7 @@ export function SectionCards({ feeds }: SectionCardsProps) {
             <span className='font-medium'>Live Update</span>
           </div>
           <div className='text-muted-foreground text-sm'>
-            Data terakhir diupdate setiap 30 detik
+            Data terakhir diupdate setiap 15 detik
           </div>
         </CardFooter>
       </Card>

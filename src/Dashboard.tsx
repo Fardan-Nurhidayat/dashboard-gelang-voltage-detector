@@ -162,7 +162,7 @@ export default function DashboardPage() {
 
     const interval = setInterval(() => {
       fetchApi();
-    }, 30000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, []);
