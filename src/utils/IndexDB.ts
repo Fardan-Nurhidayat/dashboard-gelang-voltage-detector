@@ -164,6 +164,24 @@ export const getUser = async (name: string, password: string) => {
   return showUser;
 };
 
+export const getDetailUser = async (id:string) => {
+  const db = await initDB();
+  const tx = db.transaction(USER_STORE, "readonly");
+  const store = tx.objectStore(USER_STORE);
+
+  const user = await store.getAll();
+  const foundUser = user.find(u => u.id == id);
+  let showUser = null;
+  if(foundUser){
+    showUser = {
+      id: foundUser.id,
+      name:foundUser.name,
+    };
+  }
+  await tx.done;
+  return showUser;
+}
+
 export const saveChannelAndFeeds = async ({
   channel,
   feeds,
