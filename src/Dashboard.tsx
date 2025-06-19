@@ -83,16 +83,15 @@ export default function DashboardPage() {
   const userId = currentUser?.id?.toString() || null;
 
   const fetchApi = async () => {
-    const feedsUrl = "https://api.thingspeak.com/channels/2922736/feeds.json";
+    const feedsUrl =
+      "https://api.thingspeak.com/channels/2922736/feeds.json?results=100";
 
     try {
       const response = await fetch(feedsUrl);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
       const responseJson = await response.json();
-
       // Simpan data baru dari API ke IndexedDB
       await saveChannelAndFeeds(responseJson);
 

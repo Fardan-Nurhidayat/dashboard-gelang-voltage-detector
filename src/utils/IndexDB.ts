@@ -112,7 +112,7 @@ const userData: User[] = [
 ];
 
 export const initDB = async () => {
-  const db = await openDB(DB_NAME, 3, {
+  const db = await openDB(DB_NAME, 4, {
     upgrade(db) {
       if (!db.objectStoreNames.contains(CHANNEL_STORE)) {
         db.createObjectStore(CHANNEL_STORE, { keyPath: "id" });
