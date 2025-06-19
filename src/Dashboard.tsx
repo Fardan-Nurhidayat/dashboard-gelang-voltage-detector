@@ -76,9 +76,9 @@ export default function DashboardPage() {
   const [chartData, setChartData] = useState<{ date: string; bpm: number }[]>(
     []
   );
-
-  // ✅ Tambah loading state
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = currentUser?.id?.toString() || null;
 
@@ -87,11 +87,27 @@ export default function DashboardPage() {
 
     try {
       const response = await fetch(feedsUrl);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const responseJson = await response.json();
 
       // Simpan data baru dari API ke IndexedDB
       await saveChannelAndFeeds(responseJson);
 
+      // Setelah menyimpan, ambil data yang sudah disimpan
+      await loadDataFromIndexedDB();
+    } catch (error) {
+      console.error("Error fetching data from API:", error);
+      setError("Failed to fetch data from server");
+      setIsLoading(false);
+    }
+  };
+
+  // Load data dari IndexedDB dengan error handling yang lebih baik
+  const loadDataFromIndexedDB = async () => {
+    try {
       const savedChannel = await getChannel();
       let filteredFeeds = [];
 
@@ -103,35 +119,26 @@ export default function DashboardPage() {
         filteredFeeds = await getFeeds(userId);
       }
 
-      setChannel({
-        length: filteredFeeds.length,
-        channel: savedChannel,
-        feeds: filteredFeeds,
-      });
-
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setIsLoading(false);
-    }
-  };
-
-  // Load data dari IndexedDB saat komponen mount
-  const loadSavedData = async () => {
-    try {
-      const savedChannel = await getChannel();
-      const savedFeeds = await getFeeds(userId); // Filter berdasarkan userId
-
-      if (savedChannel && savedFeeds.length > 0) {
+      if (savedChannel) {
         setChannel({
-          length: savedFeeds.length,
+          length: filteredFeeds.length,
           channel: savedChannel,
-          feeds: savedFeeds,
+          feeds: filteredFeeds,
         });
+      }
+
+      setIsLoading(false);
+      setError(null);
+    } catch (error) {
+      console.error("Error loading data from IndexedDB:", error);
+      // Jika IndexedDB error, coba fetch dari API sebagai fallback
+      if (!channel.feeds.length) {
+        console.log("IndexedDB error, trying to fetch from API...");
+        await fetchApi();
+      } else {
+        setError("Failed to load data");
         setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error loading saved data:", error);
     }
   };
 
@@ -143,23 +150,39 @@ export default function DashboardPage() {
     if (!userId) return [];
 
     return feeds
-      .filter(feed => feed.field3 && feed.field5 === userId) // Filter berdasarkan field5 dan field3
+      .filter(feed => feed.field3 && feed.field5 === userId)
       .map(feed => {
-        // Parse the created_at timestamp
         const createdAt = new Date(feed.created_at);
-
         return {
-          date: createdAt.toISOString(), // Keep full ISO timestamp for accurate filtering and grouping
+          date: createdAt.toISOString(),
           bpm: Number(feed.field3),
         };
       })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Sort by date ascending
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  };
+
+  // Initialize data on component mount
+  const initializeData = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Coba load dari IndexedDB dulu
+      await loadDataFromIndexedDB();
+
+      // Jika berhasil dan ada data, tidak perlu fetch API lagi
+      // Jika tidak ada data atau error, fetchApi sudah dipanggil di loadDataFromIndexedDB
+    } catch (error) {
+      console.error("Error initializing data:", error);
+      // Jika semua gagal, coba fetch dari API langsung
+      await fetchApi();
+    }
   };
 
   useEffect(() => {
-    loadSavedData();
-    fetchApi();
+    initializeData();
 
+    // Set interval untuk update data secara berkala
     const interval = setInterval(() => {
       fetchApi();
     }, 15000);
@@ -174,6 +197,53 @@ export default function DashboardPage() {
     }
   }, [channel.feeds, userId]);
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <SidebarProvider>
+        <AppSidebar variant='inset' />
+        <SidebarInset>
+          <SiteHeader />
+          <div className='flex flex-1 flex-col'>
+            <div className='@container/main flex flex-1 flex-col gap-2'>
+              <div className='flex flex-col gap-4 py-4 px-10 md:gap-6 md:py-6'>
+                <div className='text-center'>
+                  <p>Loading data...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
+  // Error state
+  if (error && channel.feeds.length === 0) {
+    return (
+      <SidebarProvider>
+        <AppSidebar variant='inset' />
+        <SidebarInset>
+          <SiteHeader />
+          <div className='flex flex-1 flex-col'>
+            <div className='@container/main flex flex-1 flex-col gap-2'>
+              <div className='flex flex-col gap-4 py-4 px-10 md:gap-6 md:py-6'>
+                <div className='text-center'>
+                  <p className='text-red-500'>{error}</p>
+                  <button
+                    onClick={initializeData}
+                    className='mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600'>
+                    Retry
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar variant='inset' />
@@ -182,15 +252,13 @@ export default function DashboardPage() {
         <div className='flex flex-1 flex-col'>
           <div className='@container/main flex flex-1 flex-col gap-2'>
             <div className='flex flex-col gap-4 py-4 px-10 md:gap-6 md:py-6'>
-              {isLoading ? (
-                <p className='text-center'>Loading data...</p>
-              ) : channel.feeds.length === 0 ? (
+              {channel.feeds.length === 0 ? (
                 <p className='text-center'>No data available</p>
               ) : currentUser.is_admin === 1 ? (
-                // 🔽 Admin melihat Tabel
+                // Admin melihat Tabel
                 <Tables feeds={channel.feeds} />
               ) : (
-                // 🔽 User biasa melihat Chart dan SectionCards
+                // User biasa melihat Chart dan SectionCards
                 <>
                   <SectionCards feeds={channel.feeds} />
                   <ChartAreaInteractive chartData={chartData} />
