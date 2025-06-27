@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router";
-import { getUser } from "@/utils/IndexDB";
+// import { getUser } from "@/utils/IndexDB";
 
 export function LoginForm({
   className,
@@ -30,27 +30,33 @@ export function LoginForm({
     const password = (
       e.currentTarget.elements.namedItem("password") as HTMLInputElement
     )?.value;
-    const user = await getUser(name, password);
-    if (user) {
-      MySwal.fire({
-        title: "Anda Berhasil Login",
-        didOpen: () => {
-          MySwal.isLoading();
-        },
-      }).then(() => {
-        localStorage.setItem("user", JSON.stringify(user));
-        navigate("/dashboard");
-      });
-    } else {
-      MySwal.fire({
-        icon: "error",
-        title: "Anda Gagal Login",
-        text: "Username atau password salah",
-        didOpen: () => {
-          MySwal.isLoading();
-        },
-      });
-    }
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name, password: password }),
+    });
+    const data = await res.json(); 
+    console.log(data);
+    // if (data.ok) {
+    //   MySwal.fire({
+    //     title: "Anda Berhasil Login",
+    //     didOpen: () => {
+    //       MySwal.isLoading();
+    //     },
+    //   }).then(() => {
+    //     localStorage.setItem("user", JSON.stringify(data));
+    //     navigate("/dashboard");
+    //   });
+    // } else {
+    //   MySwal.fire({
+    //     icon: "error",
+    //     title: "Anda Gagal Login",
+    //     text: "Username atau password salah",
+    //     didOpen: () => {
+    //       MySwal.isLoading();
+    //     },
+    //   });
+    // }
   };
   return (
     <div

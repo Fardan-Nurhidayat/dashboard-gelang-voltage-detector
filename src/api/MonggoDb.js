@@ -1,32 +1,34 @@
-import dotenv from "dotenv";
-dotenv.config(); // Harus dipanggil paling atas sebelum pakai process.env
-
+// server.js
+import express from "express";
 import mongoose from "mongoose";
+import cors from "cors";
 
-const dbUrl = process.env.DBURL;
+const url = import.meta.env.VITE_DBURL;
+export {
+  url
+};
 
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Koneksi ke MongoDB
 mongoose
-  .connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(import.meta.env.VITE_DBURL)
   .then(() => console.log("Connected to MongoDB"))
-  .catch(error => console.error("Connection error", error));
+  .catch(err => console.error("Could not connect to MongoDB", err));
 
-const testSchema = new mongoose.Schema({
-  name: String,
-  testField: String,
+// Contoh rute untuk mendapatkan data
+app.get("/api/login", async (req, res) => {
+  try {
+    const data = await YourModel.find({});
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-const TestModel = mongoose.model("Test", testSchema);
-
-const testData = new TestModel({
-  name: "Node-Mongo Connection Test",
-  testField: "It works!",
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-testData
-  .save()
-  .then(doc => {
-    console.log("Test document saved:", doc);
-  })
-  .catch(error => {
-    console.error("Error saving test document:", error);
-  });

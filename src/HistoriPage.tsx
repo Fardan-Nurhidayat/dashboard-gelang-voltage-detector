@@ -217,9 +217,6 @@ export default function HistoriPage() {
                     Waktu
                   </TableHead>
                   <TableHead className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[80px]'>
-                    Entry ID
-                  </TableHead>
-                  <TableHead className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[80px]'>
                     BPM
                   </TableHead>
                   <TableHead className='px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[100px]'>
@@ -248,9 +245,6 @@ export default function HistoriPage() {
                       className='hover:bg-muted/20 transition-colors duration-150'>
                       <TableCell className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
                         {formatDate(feed.created_at)}
-                      </TableCell>
-                      <TableCell className='px-6 py-4 whitespace-nowrap text-sm'>
-                        {feed.entry_id}
                       </TableCell>
                       <TableCell className='px-6 py-4 whitespace-nowrap text-sm'>
                         {feed.field3 || "-"}

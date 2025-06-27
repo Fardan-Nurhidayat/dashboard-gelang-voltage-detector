@@ -3,7 +3,6 @@ import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
-
 import {
   saveChannelAndFeeds,
   getChannel,
@@ -81,7 +80,6 @@ export default function DashboardPage() {
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = currentUser?.id?.toString() || null;
-
   const fetchApi = async () => {
     const feedsUrl =
       "https://api.thingspeak.com/channels/2922736/feeds.json?results=100";
