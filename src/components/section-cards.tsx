@@ -11,7 +11,7 @@ import {
 
 import { LocationCard } from "./location-card";
 import { BatteryCard } from "./battery-card";
-// import { FrequencyStatusCard } from "./frequency-status-card";
+import { FrequencyStatusCard } from "./frequency-status-card";
 interface SectionCardsProps {
   feeds: ThingSpeakFeed[];
 }
@@ -34,8 +34,8 @@ export function SectionCards({ feeds }: SectionCardsProps) {
   const latitude = lastFeeds?.field1 ?? "N/A";
   const longitude = lastFeeds?.field2 ?? "N/A";
   const battery = lastFeeds?.field7 ?? "N/A";
-  // const frequency = lastFeeds?.field6 ?? "N/A";
-  // const status = lastFeeds?.field4 ?? "N/A";
+  const frequency = lastFeeds?.field6 ?? "N/A";
+  const status = lastFeeds?.field4 ?? "N/A";
   const bpmValues = feeds.map(feed => Number(feed.field3));
 
   const latestBpm = bpmValues[bpmValues.length - 1] ?? 0;
@@ -137,6 +137,10 @@ export function SectionCards({ feeds }: SectionCardsProps) {
         longitude={longitude}
       />
       <BatteryCard batteryLevel={battery} />
+      <FrequencyStatusCard
+        frequency={frequency}
+        statusCode={status}
+      />
     </div>
   );
 }
