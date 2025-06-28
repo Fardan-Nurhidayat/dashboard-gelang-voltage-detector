@@ -34,7 +34,7 @@ export function SectionCards({ feeds }: SectionCardsProps) {
   const latitude = lastFeeds?.field1 ?? "N/A";
   const longitude = lastFeeds?.field2 ?? "N/A";
   const battery = lastFeeds?.field7 ?? "N/A";
-  const frequency = lastFeeds?.field6 ?? "N/A";
+  // const frequency = lastFeeds?.field6 ?? "N/A";
   const status = lastFeeds?.field4 ?? "N/A";
   const bpmValues = feeds.map(feed => Number(feed.field3));
 
@@ -138,7 +138,6 @@ export function SectionCards({ feeds }: SectionCardsProps) {
       />
       <BatteryCard batteryLevel={battery} />
       <FrequencyStatusCard
-        frequency={frequency}
         statusCode={status}
       />
     </div>

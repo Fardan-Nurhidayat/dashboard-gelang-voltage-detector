@@ -6,20 +6,17 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardContent,
   CardFooter,
 } from "@/components/ui/card";
 interface FrequencyStatusCardProps {
-  frequency: string | undefined; // field6
   statusCode: string | undefined; // field4
 }
 
 export function FrequencyStatusCard({
-  frequency,
   statusCode,
 }: FrequencyStatusCardProps) {
   // Validasi dan parsing frekuensi
-  const isValidFrequency = frequency && !isNaN(Number(frequency));
+  // const isValidFrequency = frequency && !isNaN(Number(frequency));
   // const freqValue = isValidFrequency ? Number(frequency) : null;
   // Mapping status berdasarkan field8
   const getStatusBadge = () => {
