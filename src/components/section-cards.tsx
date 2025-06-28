@@ -56,7 +56,7 @@ export function SectionCards({ feeds }: SectionCardsProps) {
             <Badge
               variant='outline'
               className='flex items-center gap-1'>
-              {latestBpm < 60 ? (
+              {latestBpm < 50 ? (
                 <>🩷 Detak Jantung Rendah</>
               ) : latestBpm >= 170 ? (
                 <>⚠️ Detak Jantung Tinggi</>
@@ -67,10 +67,10 @@ export function SectionCards({ feeds }: SectionCardsProps) {
           </CardAction>
         </CardHeader>
         <CardContent>
-          {latestBpm < 60 ? (
+          {latestBpm < 50 ? (
             <div className='space-y-3'>
               <p className='text-sm text-muted-foreground'>
-                Detak jantung berada di bawah batas normal ( Kurang dari 60
+                Detak jantung berada di bawah batas normal ( Kurang dari 50
                 BPM).
               </p>
             </div>
