@@ -40,8 +40,8 @@ export default function K3HeroSection() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.8 }}
           className='relative z-10 mx-auto max-w-xl py-4 text-center text-2xl font-normal text-neutral-600 dark:text-neutral-400'>
-          Tingkatkan budaya kerja yang aman dan sehat dengan peduli K3,
-          inspeksi berkala, serta sistem pelaporan yang terintegrasi.
+          Tingkatkan budaya kerja yang aman dan sehat dengan peduli K3, inspeksi
+          berkala, serta sistem pelaporan yang terintegrasi.
         </motion.p>
 
         {/* Tombol Login */}
@@ -50,10 +50,10 @@ export default function K3HeroSection() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 1 }}
           className='relative z-10 mt-8 flex flex-wrap items-center justify-center gap-4'>
-          <Link to='/login'>
-            <a className='w-60 transform rounded-lg bg-black px-10 py-4 text-2xl text-center font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200'>
-              Login
-            </a>
+          <Link
+            to='/login'
+            className='w-60 transform rounded-lg bg-black px-10 py-4 text-2xl text-center font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200'>
+            Login
           </Link>
         </motion.div>
       </div>
