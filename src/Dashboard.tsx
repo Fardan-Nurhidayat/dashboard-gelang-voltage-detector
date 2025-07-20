@@ -260,7 +260,32 @@ export default function DashboardPage() {
                 // User biasa melihat Chart dan SectionCards
                 <>
                   <SectionCards feeds={channel.feeds} />
-                  <ChartAreaInteractive chartData={chartData} />
+                  <div className='mb-6'>
+                    <div className='rounded-lg border bg-white shadow-sm p-6'>
+                      <h2 className='text-lg font-semibold'>Grafik BPM</h2>
+                      <p className='text-sm text-muted-foreground mb-4'>
+                        Info: Rentang aman detak jantung (BPM) setiap orang
+                        berbeda, terutama dipengaruhi oleh berat badan, dengan
+                        perbedaan rata-rata sekitar 23%.
+                        <ul className='list-disc pl-5'>
+                          <li>
+                            <strong>Normal</strong>: 68–70 BPM
+                          </li>
+                          <li>
+                            <strong>Overweight</strong>: 84–85 BPM
+                          </li>
+                        </ul>
+                        Jika terjadi{" "}
+                        <strong>
+                          penurunan drastis detak jantung hingga sekitar 30%
+                          dari nilai rata-rata harian
+                        </strong>
+                        , hal ini dapat menandakan adanya gangguan pada fungsi
+                        jantung dan perlu mendapat perhatian medis.
+                      </p>
+                      <ChartAreaInteractive chartData={chartData} />
+                    </div>
+                  </div>
                 </>
               )}
             </div>
